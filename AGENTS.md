@@ -12,4 +12,4 @@ Tu interviens sur le projet CodeArena (arène tactique 2D de bots programmables)
 - Consulter et respecter les règles de `.agent/rules/`.
 - Commits conventionnels obligatoires (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`).
 - Sécurité : requêtes SQL paramétrées obligatoires, hash bcrypt pour les mots de passe, JWT sur routes privées.
-- Toute commande système doit passer par `task`.
+- Toute commande système doit passer par `task` et être journalisée via `2>&1 | tee ./tmp/exec_logs.log`.
