@@ -1,0 +1,170 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "CodeArena API",
+    "description": "API REST pour la plateforme d'affrontement tactique de bots en 2D CodeArena (SAÉ BUT3 Informatique).",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Serveur de développement local"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "example": "UP" },
+          "timestamp": { "type": "string", "format": "date-time" },
+          "database": { "type": "string", "example": "Connected" }
+        }
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "required": ["username", "email", "password"],
+        "properties": {
+          "username": { "type": "string", "example": "CyberPilot42", "minLength": 3, "maxLength": 30 },
+          "email": { "type": "string", "format": "email", "example": "pilote@codearena.io" },
+          "password": { "type": "string", "format": "password", "minLength": 6, "example": "securePassword123" }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["identifier", "password"],
+        "properties": {
+          "identifier": { "type": "string", "example": "CyberPilot42" },
+          "password": { "type": "string", "format": "password", "example": "securePassword123" }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string", "example": "Connexion réussie." },
+          "token": { "type": "string", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." },
+          "user": {
+            "type": "object",
+            "properties": {
+              "player_id": { "type": "integer", "example": 1 },
+              "username": { "type": "string", "example": "CyberPilot42" },
+              "email": { "type": "string", "example": "pilote@codearena.io" },
+              "elo_rank": { "type": "integer", "example": 1000 }
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string", "example": "Identifiants invalides." }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Vérification de l'état de l'API et de PostgreSQL",
+        "responses": {
+          "200": {
+            "description": "Système opérationnel",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HealthResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur ou base de données inaccessible"
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "summary": "Inscription d'un nouveau pilote",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RegisterRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Compte créé avec succès",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthResponse" }
+              }
+            }
+          },
+          "400": { "description": "Données invalides ou incomplètes" },
+          "409": { "description": "Nom d'utilisateur ou email déjà existant" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Connexion et obtention du jeton JWT",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Connexion réussie",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthResponse" }
+              }
+            }
+          },
+          "400": { "description": "Identifiant ou mot de passe manquant" },
+          "401": { "description": "Identifiants invalides" }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "summary": "Profil et classes débloquées du pilote connecté",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Données du profil" },
+          "401": { "description": "Token manquant" },
+          "403": { "description": "Token invalide ou expiré" },
+          "404": { "description": "Utilisateur introuvable" }
+        }
+      }
+    },
+    "/api/classes": {
+      "get": {
+        "summary": "Liste des classes de robots disponibles",
+        "responses": {
+          "200": { "description": "Liste des classes" }
+        }
+      }
+    },
+    "/api/missions": {
+      "get": {
+        "summary": "Liste des missions tactiques et conditions de déblocage",
+        "responses": {
+          "200": { "description": "Liste des missions" }
+        }
+      }
+    }
+  }
+}

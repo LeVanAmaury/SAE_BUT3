@@ -61,8 +61,9 @@ tasks:
   test:unit:
     desc: "Lance les tests unitaires backend"
     cmds:
-      - echo "Exécution des tests unitaires..."
-      # Commande à brancher dès l'écriture des tests (ex: node --test backend/tests/*.test.js)
+      - echo "Exécution des tests unitaires backend..."
+      - node --test backend/tests/*.test.js
+
 
   test:e2e:
     desc: "Exécute les tests fonctionnels E2E (Playwright)"

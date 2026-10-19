@@ -1,8 +1,12 @@
 <script setup>
 import { ref } from 'vue';
-import { RouterLink, useRouter } from 'vue-router';
+import { RouterLink, useRouter, useRoute } from 'vue-router';
+import { useAuth } from '../composables/useAuth.js';
 
 const router = useRouter();
+const route = useRoute();
+const { login } = useAuth();
+
 const identifier = ref('');
 const password = ref('');
 const errorMessage = ref('');
@@ -13,7 +17,7 @@ async function handleLogin() {
   errorMessage.value = '';
   successMessage.value = '';
 
-  if (!identifier.value || !password.value) {
+  if (!identifier.value.trim() || !password.value) {
     errorMessage.value =
       'Veuillez renseigner votre identifiant et mot de passe.';
     return;
@@ -21,29 +25,13 @@ async function handleLogin() {
 
   isLoading.value = true;
   try {
-    const res = await fetch('http://localhost:3000/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        identifier: identifier.value,
-        password: password.value,
-      }),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.error || 'Erreur lors de la connexion.');
-    }
-
-    // Save token
-    localStorage.setItem('codearena_token', data.token);
-    localStorage.setItem('codearena_user', JSON.stringify(data.user));
+    await login(identifier.value.trim(), password.value);
     successMessage.value = 'Connexion réussie ! Redirection...';
 
+    const target = route.query.redirect || '/arena';
     setTimeout(() => {
-      router.push('/arena');
-    }, 1000);
+      router.push(target);
+    }, 800);
   } catch (err) {
     errorMessage.value = err.message || 'Impossible de joindre le serveur.';
   } finally {

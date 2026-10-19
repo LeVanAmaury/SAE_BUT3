@@ -1,29 +1,12 @@
 <script setup>
-import { ref, onMounted } from 'vue';
 import { RouterLink, RouterView, useRouter } from 'vue-router';
+import { useAuth } from './composables/useAuth.js';
 
 const router = useRouter();
-const currentUser = ref(null);
-
-onMounted(() => {
-  checkUser();
-});
-
-function checkUser() {
-  const storedUser = localStorage.getItem('codearena_user');
-  if (storedUser) {
-    try {
-      currentUser.value = JSON.parse(storedUser);
-    } catch {
-      currentUser.value = null;
-    }
-  }
-}
+const { currentUser, logout } = useAuth();
 
 function handleLogout() {
-  localStorage.removeItem('codearena_token');
-  localStorage.removeItem('codearena_user');
-  currentUser.value = null;
+  logout();
   router.push('/login');
 }
 </script>

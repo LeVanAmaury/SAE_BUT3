@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue';
 import LoginView from '../views/LoginView.vue';
 import RegisterView from '../views/RegisterView.vue';
 import ArenaView from '../views/ArenaView.vue';
+import { isTokenValid, useAuth } from '../composables/useAuth.js';
 
 const routes = [
   {
@@ -33,14 +34,22 @@ const router = createRouter({
   routes,
 });
 
-// Garde de navigation : Bloque l'accès aux pages internes si le jeton est absent
+// Garde de navigation : Bloque l'accès aux pages internes si le jeton est absent ou expiré
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('codearena_token');
-  if (to.meta.requiresAuth && !token) {
+  const hasValidToken = isTokenValid(token);
+
+  if (to.meta.requiresAuth && !hasValidToken) {
+    const { logout } = useAuth();
+    logout();
     next({ name: 'Login', query: { redirect: to.fullPath } });
+  } else if ((to.name === 'Login' || to.name === 'Register') && hasValidToken) {
+    // Si l'utilisateur est déjà connecté avec un jeton valide, rediriger vers l'arène
+    next({ name: 'Arena' });
   } else {
     next();
   }
 });
 
 export default router;
+

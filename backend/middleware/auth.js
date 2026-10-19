@@ -1,10 +1,16 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-dotenv.config({ path: '../.env' });
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const JWT_SECRET =
   process.env.JWT_SECRET || 'codearena_dev_secret_key_change_in_production';
+
 
 export function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];

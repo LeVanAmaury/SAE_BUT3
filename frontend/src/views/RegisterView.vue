@@ -1,8 +1,11 @@
 <script setup>
 import { ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
+import { useAuth } from '../composables/useAuth.js';
 
 const router = useRouter();
+const { register } = useAuth();
+
 const username = ref('');
 const email = ref('');
 const password = ref('');
@@ -15,13 +18,29 @@ async function handleRegister() {
   errorMessage.value = '';
   successMessage.value = '';
 
+  const cleanUsername = username.value.trim();
+  const cleanEmail = email.value.trim();
+
   if (
-    !username.value ||
-    !email.value ||
+    !cleanUsername ||
+    !cleanEmail ||
     !password.value ||
     !confirmPassword.value
   ) {
     errorMessage.value = 'Tous les champs sont requis.';
+    return;
+  }
+
+  const usernameRegex = /^[a-zA-Z0-9_-]{3,30}$/;
+  if (!usernameRegex.test(cleanUsername)) {
+    errorMessage.value =
+      'Le nom d’utilisateur doit comporter entre 3 et 30 caractères alphanumériques (tirets autorisés).';
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(cleanEmail)) {
+    errorMessage.value = 'Veuillez saisir une adresse email valide.';
     return;
   }
 
@@ -38,21 +57,7 @@ async function handleRegister() {
 
   isLoading.value = true;
   try {
-    const res = await fetch('http://localhost:3000/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: username.value,
-        email: email.value,
-        password: password.value,
-      }),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.error || "Erreur lors de l'inscription.");
-    }
+    await register(cleanUsername, cleanEmail, password.value);
 
     successMessage.value =
       'Compte créé avec succès ! Redirection vers la page de connexion...';
