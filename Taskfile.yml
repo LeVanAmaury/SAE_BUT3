@@ -25,11 +25,38 @@ tasks:
       - docker compose up -d postgres
       - echo "Base réinitialisée."
 
+  install:front:
+    desc: "Installe les dépendances frontend"
+    cmds:
+      - npm --prefix frontend install
+
+  install:back:
+    desc: "Installe les dépendances backend"
+    cmds:
+      - npm --prefix backend install
+
+  install:
+    desc: "Installe toutes les dépendances (root, backend, frontend)"
+    cmds:
+      - npm install
+      - task: install:back
+      - task: install:front
+
+  build:front:
+    desc: "Compile le frontend pour vérifier les erreurs de build"
+    cmds:
+      - npm --prefix frontend run build
+
   code:
     desc: "Vérifie le formatage et les règles de code"
     cmds:
       - echo "Vérification syntaxique..."
       - npx prettier --check "backend/**/*.js" "frontend/src/**/*.{js,vue}"
+
+  format:
+    desc: "Formate automatiquement les fichiers de code avec Prettier"
+    cmds:
+      - npx prettier --write "backend/**/*.js" "frontend/src/**/*.{js,vue}"
 
   test:unit:
     desc: "Lance les tests unitaires backend"
