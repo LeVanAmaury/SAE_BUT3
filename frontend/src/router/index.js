@@ -14,6 +14,7 @@ const routes = [
     path: '/arena',
     name: 'Arena',
     component: ArenaView,
+    meta: { requiresAuth: true },
   },
   {
     path: '/login',
@@ -30,6 +31,16 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+// Garde de navigation : Bloque l'accès aux pages internes si le jeton est absent
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('codearena_token');
+  if (to.meta.requiresAuth && !token) {
+    next({ name: 'Login', query: { redirect: to.fullPath } });
+  } else {
+    next();
+  }
 });
 
 export default router;
